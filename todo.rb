@@ -22,6 +22,13 @@ def check_file()
   end
 end
 
+
+# Helper function to determine how many digits are in the passed
+# number
+# Ex.
+# num_of_digits(100)
+# returns -> 3
+#
 def num_of_digits(num)
   digit_counter = 0
   while num > 0
@@ -31,9 +38,15 @@ def num_of_digits(num)
   return digit_counter
 end
 
+
+# Helper function to determine how many spaces to pad after the
+# id value so that the formatting stays consist when the id gets
+# larger.
+# 
 def pad_size(id)
   return num_of_digits($last_goal_id + 1) - num_of_digits(id)
 end
+
 
 class Goal
   attr_reader :status, :content
@@ -54,6 +67,11 @@ class Goal
   end
 end
 
+
+# Takes the passed array of goals in string format and parse each
+# element. A new goal object is then initialized from the parsed
+# information.
+#
 def convert_to_goals(str_goals)
   id = 1
   for goal in str_goals
@@ -69,10 +87,12 @@ def convert_to_goals(str_goals)
   end
 end
 
+
 def add_goal(content)
   id = $goals.length + 1
   $goals.push(Goal.new(id, false, content))
 end
+
 
 def finish_goal(id)
   if id > 0
@@ -80,12 +100,20 @@ def finish_goal(id)
   end
 end
 
+
 def delete_goal(id)
   if id > 0
     $goals.delete_at(id-1)
   end
 end
 
+
+# Read the contents of the output file and store each
+# line into an array of string.
+# Then call on convert_to_goals(str_goals) to fill
+# goal array: $goals with goal objects containing the
+# parsed information from the strings in str_goals
+#
 def load_from_file()
   check_file()
   str_goals = []
@@ -99,6 +127,7 @@ def load_from_file()
   
   convert_to_goals(str_goals)
 end
+
 
 def purge_confirmed()
   puts "Continue with purge? Warning! Once confirmed, it cannot be reversed. [y,N]"
@@ -114,6 +143,10 @@ def purge_confirmed()
   end
 end
 
+
+# Checks if there are any arguments passed after the initial options i.e:
+# Ex. todo <option> <content> <-- checks if this is missing
+# 
 def has_valid_args()
   if ARGV[1] == nil
     puts "Missing id or content for the option. Pass -h or --help for what to pass."
@@ -121,6 +154,7 @@ def has_valid_args()
   end
   return true
 end
+
 
 def display_help()
   puts "Todo - a cli todo script written in Ruby"
@@ -146,7 +180,9 @@ def display_help()
   puts "                       an empty list"
 end
 
+
 def process_args()
+  # clears the terminal screen to display a clean output
   print "\e[H\e[2J"
  
   case ARGV[0]
@@ -182,6 +218,9 @@ def process_args()
   end
 end
 
+# Reorders the list after editing (adding/removing) current
+# list.
+#
 def update_list() 
   id = 1
   for goal in $goals
@@ -189,6 +228,7 @@ def update_list()
     id += 1
   end
 end
+
 
 def display_list()
   puts "\tTodo: "
@@ -198,6 +238,9 @@ def display_list()
   end
 end
 
+# Saves the contents of $goals.to_string() to the output
+# file.
+#
 def save_to_file()
   check_file()
   File.open($output_file_path, 'w') do |file|
@@ -208,7 +251,7 @@ def save_to_file()
   puts "Saved to file"
 end
 
-
+# The "main" function
 def run()
   load_from_file()
   process_args()
@@ -218,5 +261,6 @@ def run()
     save_to_file()
   end
 end
+
 
 run()
