@@ -4,20 +4,24 @@ require 'fileutils'
 
 $status_symbol = {false => "[ ]", true => "[x]"}
 
-$output_folder = "/.todo/"
-$output_folder_path = ENV['HOME'] + $output_folder
-$output_file = "todo.txt"
-$output_file_path = $output_folder_path + $output_file
+$outputs_folder = "/.todo/"
+$outputs_folder_path = ENV['HOME'] + $outputs_folder
+
+$list_file = "todo.txt"
+$list_file_path = $outputs_folder_path + $list_file
+
+$log_file = "todo_log_#{Time.now.strftime("%y-%m-%d")}.txt"
+$log_file_path = $outputs_folder_path + $log_file
 
 $last_goal_id = 0
 $list_modified = false
 $goals = []
 
 
-def check_file()
-  unless File.exists?($output_file_path)
-    FileUtils.mkdir_p($output_folder_path)
-    File.new($output_file_path, 'w')
+def check_file(file)
+  unless File.exists?(file)
+    FileUtils.mkdir_p($outputs_folder_path)
+    File.new(file, 'w')
     puts("An output file does not exist, so it will be created.")
   end
 end
@@ -114,10 +118,10 @@ end
 # goal array: $goals with goal objects containing the
 # parsed information from the strings in str_goals
 #
-def load_from_file()
-  check_file()
+def load_from_file(input_file)
+  check_file(input_file)
   str_goals = []
-  File.open($output_file_path, "r") do |file|
+  File.open(input_file, "r") do |file|
     file.each_line do |line|
       str_goals.push(line)
     end
@@ -163,21 +167,61 @@ def display_help()
   puts "   or:  todo <argument> <id/content>"
   puts
   puts "Arguments:"
-  puts "  -a,  --add, +        Adds a goal to the list"
-  puts '                          Ex. # todo -a "add description of what to do"'
+  puts "  +,  -a,  --add,         Adds a goal to the list"
+  puts '                            Ex. # todo -a "add description of what to do"'
   puts 
-  puts "  -x,  --check-off     Check off a goal on the list with the passed id(s)"
-  puts "                          Ex. # todo -x 1"
-  puts "                          Ex. # todo -x 1 2 3"
+  puts "      -x,  --check-off    Check off a goal on the list with the passed id(s)"
+  puts "                            Ex. # todo -x 1"
+  puts "                            Ex. # todo -x 1 2 3"
   puts
-  puts "  -d,  --delete, -     Deletes a goal a on the list with the passed id(s)"
-  puts "                          Ex. # todo -d 1"
-  puts "                          Ex. # todo -d 4 8 1"
+  puts "  -,  -d,  --delete,      Deletes a goal a on the list with the passed id(s)"
+  puts "                            Ex. # todo -d 1"
+  puts "                            Ex. # todo -d 4 8 1"
   puts
-  puts "  -h,  --help          Displays this help output"
+  puts "      -h,  --help         Displays this help output"
   puts
-  puts "  -pg, --purge         Clears the entire list by replacing the goals array with"
-  puts "                       an empty list"
+  puts "      -pg, --purge        Clears the entire list by replacing the goals array with"
+  puts "                          an empty list"
+end
+
+
+
+# Reorders the list after editing (adding/removing) current
+# list.
+#
+def update_list() 
+  id = 1
+  for goal in $goals
+    goal.id = id
+    id += 1
+  end
+end
+
+
+def display_list()
+  puts "Todo:                           "
+  puts "--------------------------------"
+  for goal in $goals
+    puts goal.to_string()
+  end
+end
+
+
+def log_to_file()
+  save_to_file($log_file_path)
+end
+
+# Saves the contents of $goals.to_string() to the output
+# file.
+#
+def save_to_file(file)
+  check_file(file)
+  File.open(file, 'w') do |file|
+    for goal in $goals
+      file.puts goal.to_string()
+    end
+  end
+  puts "Saved to #{file}"
 end
 
 
@@ -207,6 +251,8 @@ def process_args()
     end
   when '-h', '--help'
     display_help()
+  when '-lg', '--log'
+    log_to_file()
   when '-pg', '--purge'
     if purge_confirmed()
       $goals = []
@@ -218,49 +264,16 @@ def process_args()
   end
 end
 
-# Reorders the list after editing (adding/removing) current
-# list.
-#
-def update_list() 
-  id = 1
-  for goal in $goals
-    goal.id = id
-    id += 1
-  end
-end
-
-
-def display_list()
-  puts "\tTodo: "
-  puts "--------------------------------"
-  for goal in $goals
-    puts goal.to_string()
-  end
-end
-
-# Saves the contents of $goals.to_string() to the output
-# file.
-#
-def save_to_file()
-  check_file()
-  File.open($output_file_path, 'w') do |file|
-    for goal in $goals
-      file.puts goal.to_string()
-    end
-  end
-  puts "Saved to file"
-end
 
 # The "main" function
 def run()
-  load_from_file()
+  load_from_file($list_file_path)
   process_args()
   update_list()
   if $list_modified
     display_list()
-    save_to_file()
+    save_to_file($list_file_path)
   end
 end
-
 
 run()
