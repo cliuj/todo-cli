@@ -105,6 +105,14 @@ def finish_goal(id)
 end
 
 
+def swap_goals(id1, id2)
+  if id1.between?(0, $goals.length - 1) && id2.between?(0, $goals.length - 1)
+    $goals[id1], $goals[id2] = $goals[id2], $goals[id1]
+    $goals
+  end
+end
+
+
 def delete_goal(id)
   if id > 0
     $goals.delete_at(id-1)
@@ -167,21 +175,23 @@ def display_help()
   puts "   or:  todo <argument> <id/content>"
   puts
   puts "Arguments:"
-  puts "  +,  -a,  --add,         Adds a goal to the list"
-  puts '                            Ex. # todo -a "add description of what to do"'
+  puts "  +,  -a,   --add,          Adds a goal to the list"
+  puts '                              Ex. # todo -a "add a todo"'
   puts 
-  puts "      -x,  --check-off    Check off a goal on the list with the passed id(s)"
-  puts "                            Ex. # todo -x 1"
-  puts "                            Ex. # todo -x 1 2 3"
+  puts "      -x,   --check-off     Check off a goal on the list with the passed id(s)"
+  puts "                              Ex. # todo -x 1"
+  puts "                              Ex. # todo -x 1 2 3"
   puts
-  puts "  -,  -d,  --delete,      Deletes a goal a on the list with the passed id(s)"
-  puts "                            Ex. # todo -d 1"
-  puts "                            Ex. # todo -d 4 8 1"
+  puts "  -,  -d,   --delete        Deletes a goal a on the list with the passed id(s)"
+  puts "                              Ex. # todo -d 1"
+  puts "                              Ex. # todo -d 4 8 1"
   puts
-  puts "      -h,  --help         Displays this help output"
+  puts "      -swp, --swap          Swaps the ids(places) of the passed 2 ids"
   puts
-  puts "      -pg, --purge        Clears the entire list by replacing the goals array with"
-  puts "                          an empty list"
+  puts "      -h,   --help          Displays this help output"
+  puts
+  puts "      -pg,  --purge         Clears the entire list by replacing the goals array with"
+  puts "                            an empty list"
 end
 
 
@@ -235,6 +245,7 @@ def process_args()
       add_goal(ARGV[1])
       $list_modified = true
     end
+
   when '-x', '--check-off'
     if has_valid_args()
       for id in ARGV[1..-1]
@@ -242,6 +253,7 @@ def process_args()
       end
       $list_modified = true
     end
+
   when '-d','--delete', '-'
     if has_valid_args()
       for id in ARGV[1..-1]
@@ -249,16 +261,26 @@ def process_args()
       end
       $list_modified = true
     end
+
+  when '-swp', '--swap'
+    id1 = ARGV[1].to_i
+    id2 = ARGV[2].to_i
+    swap_goals(id1 - 1, id2 - 1)
+    $list_modified = true
+
   when '-h', '--help'
     display_help()
+
   when '-lg', '--log'
     log_to_file()
+
   when '-pg', '--purge'
     if purge_confirmed()
       $goals = []
       puts "Todo list purged"
       $list_modified = true
     end
+
   else
     display_list()
   end
