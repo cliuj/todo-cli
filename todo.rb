@@ -67,6 +67,10 @@ class Goal
     @status = true
   end
 
+  def mark_uncomplete()
+    @status = false
+  end
+
   def to_string()
     status = $status_symbol[@status]
     return "#{@id}.#{"".ljust(pad_size(@id))} #{status} #{@content}"
@@ -107,8 +111,16 @@ end
 
 
 def finish_goal(id)
-  if id > 0
-    $goals.at(id-1).mark_complete()
+  puts id
+  if id > 0 && id < $goals.length + 1
+    $goals.at(id - 1).mark_complete()
+  end
+end
+
+def unfinish_goal(id)
+  puts id
+  if id > 0 && id < $goals.length + 1
+    $goals.at(id - 1).mark_uncomplete()
   end
 end
 
@@ -203,6 +215,8 @@ def display_help()
   puts "      -x,   --check-off     Check off a goal on the list with the passed id(s)"
   puts "                              Ex. # todo -x 1"
   puts "                              Ex. # todo -x 1 2 3"
+  puts 
+  puts "      -ux,  --uncheck      Unchecks goal(s) on the list with the passed id(s)"
   puts
   puts "  -,  -d,   --delete        Deletes a goal a on the list with the passed id(s)"
   puts "                              Ex. # todo -d 1"
@@ -272,6 +286,14 @@ def process_args()
     if has_valid_args()
       for id in ARGV[1..-1]
         finish_goal(id.to_i)
+      end
+      $list_modified = true
+    end
+
+  when '-ux', '--uncheck'
+    if has_valid_args()
+      for id in ARGV[1..-1]
+        unfinish_goal(id.to_i)
       end
       $list_modified = true
     end
