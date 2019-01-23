@@ -16,6 +16,8 @@ $log_file_path = $outputs_folder_path + $log_file
 $last_goal_id = 0
 $list_modified = false
 $goals = []
+$completed = []
+$not_completed = []
 
 
 def check_file(file)
@@ -87,6 +89,12 @@ def convert_to_goals(str_goals)
     status = $status_symbol.key(goal_info.at(1).strip)
     content = goal_info.at(2).strip
     $goals.push(Goal.new(id, status, content))
+
+    if status == true
+      $completed.push(id - 1)
+    else
+      $not_completed.push(id - 1)
+    end
     id += 1
   end
 end
@@ -110,6 +118,20 @@ def swap_goals(id1, id2)
     $goals[id1], $goals[id2] = $goals[id2], $goals[id1]
     $goals
   end
+end
+
+
+def sort_list()
+  sorted_goals = []
+  for id in $not_completed
+    sorted_goals.push($goals[id])
+  end
+
+  for id in $completed
+    sorted_goals.push($goals[id])
+  end
+
+  $goals = sorted_goals
 end
 
 
@@ -266,6 +288,10 @@ def process_args()
     id1 = ARGV[1].to_i
     id2 = ARGV[2].to_i
     swap_goals(id1 - 1, id2 - 1)
+    $list_modified = true
+  
+  when '-s', '--sort'
+    sort_list()
     $list_modified = true
 
   when '-h', '--help'
