@@ -71,6 +71,10 @@ class Goal
     @status = false
   end
 
+  def edit_content(new_content)
+    @content = new_content
+  end
+
   def to_string()
     status = $status_symbol[@status]
     return "#{@id}.#{"".ljust(pad_size(@id))} #{status} #{@content}"
@@ -150,6 +154,12 @@ end
 def delete_goal(id)
   if id > 0
     $goals.delete_at(id-1)
+  end
+end
+
+def edit_goal(id, new_content)
+  if id > 0 && id < $goals.length + 1
+    $goals.at(id - 1).edit_content(new_content)
   end
 end
 
@@ -297,6 +307,12 @@ def process_args()
       end
       $list_modified = true
     end
+
+  when '-e', '--edit'
+    id = ARGV[1].to_i
+    new_content = ARGV[2]
+    edit_goal(id, new_content)
+    $list_modified = true
 
   when '-d','--delete', '-'
     if has_valid_args()
