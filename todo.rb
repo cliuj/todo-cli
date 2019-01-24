@@ -346,7 +346,13 @@ def process_args()
     end
 
   else
-    display_list()
+    if $goals.empty?
+      puts "Your todo list is currently empty, here's a list of options you can do:"
+      puts
+      display_help()
+    else
+      display_list()
+    end
   end
 end
 
