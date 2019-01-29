@@ -21,7 +21,7 @@ $not_completed = []
 
 
 def check_file(file)
-  unless File.exists?(file)
+  unless File.file?(file)
     FileUtils.mkdir_p($outputs_folder_path)
     File.new(file, 'w')
     puts("An output file does not exist, so it will be created.")
